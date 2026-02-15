@@ -1,4 +1,27 @@
-**.tfvars
-**.tfstate
-**.tfstate.*
-**/.terraform/
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+*.tfvars
+crash.log
+
+# Environment / secrets
+.env
+*.pem
+*.key
+
+# Go binaries
+src/server
+*.exe
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.tar
