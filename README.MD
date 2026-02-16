@@ -33,21 +33,7 @@ terraform apply -auto-approve
 
 # Get public ip address
 ```
-aws ec2 describe-network-interfaces \
---network-interface-ids $(
-    aws ecs describe-tasks \
-    --cluster $(terraform output -raw ecs_cluster_name) \
-    --tasks $(
-        aws ecs list-tasks \
-        --cluster $(terraform output -raw ecs_cluster_name) \
-        --service-name $(terraform output -raw ecs_service_name) \
-        --query 'taskArns[0]' --output text
-    ) \
-    --query "tasks[0].attachments[0].details[?name=='networkInterfaceId'].value" \
-    --output text
-) \
---query 'NetworkInterfaces[0].Association.PublicIp' \
---output text
+aws ec2 describe-network-interfaces --network-interface-ids $(aws ecs describe-tasks --cluster $(terraform output -raw ecs_cluster_name) --tasks $(aws ecs list-tasks --cluster $(terraform output -raw ecs_cluster_name) --service-name $(terraform output -raw ecs_service_name) --query "taskArns[0]" --output text) --query "tasks[0].attachments[0].details[?name=='networkInterfaceId'].value" --output text) --query "NetworkInterfaces[0].Association.PublicIp" --output text
 ```
 
 
