@@ -1,6 +1,19 @@
 ## Instructions
 
-### Prepare Credentials
+### For local
+```
+cd src
+go run main.go
+```
+
+### For test using docker
+```
+cd src
+docker build -t product-api .
+docker run -p 8080:8080 product-api
+```
+
+### FOR AWS - Prepare Credentials
 
 Retrieve you temporary credentials from Learner's Lab.
 Enter your configuration when prompted:
@@ -11,37 +24,34 @@ aws configure
 Enter your AWS Access Key ID, Secret Access Key, region (e.g., us-east-1), and output format (json).
 
 
-### Apply Infrastructure
+# Apply Infrastructure
 ```
 cd terraform
 terraform init
 terraform apply -auto-approve 
 ```
 
-### Authenticate Docker to ECR
+# Get public ip address
 ```
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <ECRlink>
+aws ec2 describe-network-interfaces \
+--network-interface-ids $(
+    aws ecs describe-tasks \
+    --cluster $(terraform output -raw ecs_cluster_name) \
+    --tasks $(
+        aws ecs list-tasks \
+        --cluster $(terraform output -raw ecs_cluster_name) \
+        --service-name $(terraform output -raw ecs_service_name) \
+        --query 'taskArns[0]' --output text
+    ) \
+    --query "tasks[0].attachments[0].details[?name=='networkInterfaceId'].value" \
+    --output text
+) \
+--query 'NetworkInterfaces[0].Association.PublicIp' \
+--output text
 ```
 
-### Build the image
-```
-cd src
-docker build -t cs6650-product-api .
-```
 
-# Tag it for ECR
-```
-docker tag cs6650-product-api:latest <ECR>/cs6650-product-api:latest
-```
-# Push
-```
-docker push <ECR>/cs6650-product-api:latest
-```
-
-Get public ip address
-
-
-Send some requests:
+### Send some requests:
 ```
 curl http://<PUBLIC-IP-ADDRESS>:8080/albums
 ```
